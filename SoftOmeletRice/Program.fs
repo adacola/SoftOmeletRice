@@ -43,6 +43,7 @@ let main argv =
 
     if isOnce || retweetsOnStart then retweet() |> Async.RunSynchronously
     if not isOnce then
+        Console.WriteLine("Enterを押すと終了します")
         async {
             try
                 let random = Random.MersenneTwister()
