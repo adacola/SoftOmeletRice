@@ -1,7 +1,56 @@
-﻿// F# の詳細については、http://fsharp.org を参照してください
-// 詳細については、'F# チュートリアル' プロジェクトを参照してください。
+﻿module Adacola.SoftOmeletRice.Main
+
+open System
+open System.IO
+open System.Text
+open Argu
+open MathNet.Numerics
+
+type Arguments =
+    | Once
+    | RetweetOnStart
+with
+    interface IArgParserTemplate with
+        member x.Usage: string = 
+            match x with
+            | Once -> "起動時に一度だけリツイートしてすぐアプリを終了します"
+            | RetweetOnStart -> "起動時にまずリツイートします。Onceが指定されている場合はOnceが優先されます"
+
+let softOmeletRiceTweetID = TweetID 596307547985809408L
 
 [<EntryPoint>]
-let main argv = 
-    printfn "%A" argv
-    0 // 整数の終了コードを返します
+let main argv =
+    let argParser = ArgumentParser.Create<Arguments>(errorHandler = ProcessExiter())
+    let parseResult = argParser.Parse argv
+    let isOnce = parseResult.Contains <@ Once @>
+    let retweetsOnStart = not isOnce && parseResult.Contains <@ RetweetOnStart @>
+
+    let maybeConfig =
+        let configFile = "config.json"
+        if File.Exists configFile then
+            File.ReadAllText(configFile, Encoding.UTF8) |> ConfigProvider.Parse |> Some
+        else None
+    let minHour = maybeConfig |> Option.bind (fun x -> x.MinHour) |> defaultArg <| 72 |> max 1 |> min 480
+    let maxHour = maybeConfig |> Option.bind (fun x -> x.MaxHour) |> defaultArg <| 168 |> max (minHour + 1) |> min 481
+    let consumerKey = File.ReadAllText("consumerKey.json", Encoding.UTF8) |> ConsumerKeyProvider.Parse
+    let accessToken = File.ReadAllText("accessToken.json", Encoding.UTF8) |> AccessTokenProvider.Parse
+    let token = Twitter.authenticate consumerKey accessToken
+    let retweet() =
+        async {
+            let! response = Twitter.unretweetAndRetweet token softOmeletRiceTweetID
+            do Console.WriteLine("{0} にリツイートしました。ID : {1}", DateTime.Now, response.Id)
+        }
+
+    if isOnce || retweetsOnStart then retweet() |> Async.RunSynchronously
+    if not isOnce then
+        async {
+            let random = Random.MersenneTwister()
+            while true do
+                let waitHour = random.Next(minHour, maxHour)
+                let waitSecond = random.Next(3600)
+                let waitTotalMilliSecond = (waitHour * 3600 + waitSecond) * 1000
+                do! Async.Sleep waitTotalMilliSecond
+                do! retweet()
+        } |> Async.Start
+        Console.ReadLine() |> ignore
+    0
