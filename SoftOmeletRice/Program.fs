@@ -44,13 +44,18 @@ let main argv =
     if isOnce || retweetsOnStart then retweet() |> Async.RunSynchronously
     if not isOnce then
         async {
-            let random = Random.MersenneTwister()
-            while true do
-                let waitHour = random.Next(minHour, maxHour)
-                let waitSecond = random.Next(3600)
-                let waitTotalMilliSecond = (waitHour * 3600 + waitSecond) * 1000
-                do! Async.Sleep waitTotalMilliSecond
-                do! retweet()
+            try
+                let random = Random.MersenneTwister()
+                while true do
+                    let waitHour = random.Next(minHour, maxHour)
+                    let waitSecond = random.Next(3600)
+                    let waitTotalSecond = waitHour * 3600 + waitSecond
+                    do Console.WriteLine("{0} 秒スリープします", waitTotalSecond)
+                    let waitTotalMilliSecond = waitTotalSecond * 1000
+                    do! Async.Sleep waitTotalMilliSecond
+                    do! retweet()
+            with
+            | e -> do Console.Error.WriteLine e
         } |> Async.Start
         Console.ReadLine() |> ignore
     0
