@@ -51,7 +51,7 @@ let main argv =
                     let waitHour = random.Next(minHour, maxHour)
                     let waitSecond = random.Next(3600)
                     let waitTotalSecond = waitHour * 3600 + waitSecond
-                    do Console.WriteLine("{0} 秒スリープします", waitTotalSecond)
+                    do Console.WriteLine("{0} スリープします", waitTotalSecond |> float |> TimeSpan.FromSeconds)
                     let waitTotalMilliSecond = waitTotalSecond * 1000
                     do! Async.Sleep waitTotalMilliSecond
                     do! retweet()
