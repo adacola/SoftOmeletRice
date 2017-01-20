@@ -32,6 +32,8 @@ let main argv =
         else None
     let minHour = maybeConfig |> Option.bind (fun x -> x.MinHour) |> defaultArg <| 72 |> max 1 |> min 480
     let maxHour = maybeConfig |> Option.bind (fun x -> x.MaxHour) |> defaultArg <| 168 |> max (minHour + 1) |> min 481
+    let maybeExcludeStartEnd =
+        maybeConfig |> Option.bind (fun x -> match x.ExcludeStartHour, x.ExcludeEndHour with Some s, Some e -> Some(s, e) | _ -> None)
     let consumerKey = File.ReadAllText("consumerKey.json", Encoding.UTF8) |> ConsumerKeyProvider.Parse
     let accessToken = File.ReadAllText("accessToken.json", Encoding.UTF8) |> AccessTokenProvider.Parse
     let token = Twitter.authenticate consumerKey accessToken
@@ -53,10 +55,13 @@ let main argv =
                     let waitTotalSecond = waitHour * 3600 + waitSecond
                     let waitTimeSpan = waitTotalSecond |> float |> TimeSpan.FromSeconds
                     let waitEndTime = DateTime.Now + waitTimeSpan
-                    do Console.WriteLine("{0} スリープします。 {1} にリツイート", waitTimeSpan, waitEndTime)
-                    let waitTotalMilliSecond = waitTotalSecond * 1000
-                    do! Async.Sleep waitTotalMilliSecond
-                    do! retweet()
+                    match maybeExcludeStartEnd with
+                    | Some(s, e) when s <= waitEndTime.Hour && waitEndTime.Hour < e -> do ()
+                    | _ -> 
+                        do Console.WriteLine("{0} スリープします。 {1} にリツイート", waitTimeSpan, waitEndTime)
+                        let waitTotalMilliSecond = waitTotalSecond * 1000
+                        do! Async.Sleep waitTotalMilliSecond
+                        do! retweet()
             with
             | e -> do Console.Error.WriteLine e
         } |> Async.Start

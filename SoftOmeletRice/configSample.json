@@ -1,7 +1,9 @@
 [
     {
         "minHour": 0,
-        "maxHour": 0
+        "maxHour": 0,
+        "excludeStartHour": 0,
+        "excludeEndHour": 0
     },
     {
     }
