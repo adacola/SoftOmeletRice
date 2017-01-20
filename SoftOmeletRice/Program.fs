@@ -1,4 +1,4 @@
-﻿module Adacola.SoftOmeletRice.Main
+module Adacola.SoftOmeletRice.Main
 
 open System
 open System.IO
@@ -51,7 +51,9 @@ let main argv =
                     let waitHour = random.Next(minHour, maxHour)
                     let waitSecond = random.Next(3600)
                     let waitTotalSecond = waitHour * 3600 + waitSecond
-                    do Console.WriteLine("{0} スリープします", waitTotalSecond |> float |> TimeSpan.FromSeconds)
+                    let waitTimeSpan = waitTotalSecond |> float |> TimeSpan.FromSeconds
+                    let waitEndTime = DateTime.Now + waitTimeSpan
+                    do Console.WriteLine("{0} スリープします。 {1} にリツイート", waitTimeSpan, waitEndTime)
                     let waitTotalMilliSecond = waitTotalSecond * 1000
                     do! Async.Sleep waitTotalMilliSecond
                     do! retweet()
