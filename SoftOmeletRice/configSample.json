@@ -1,10 +1,17 @@
-[
-    {
-        "minHour": 0,
-        "maxHour": 0,
-        "excludeStartHour": 0,
-        "excludeEndHour": 0
-    },
-    {
-    }
-]
+{
+    "retweets": [
+        {
+            "name": "hoge",
+            "tweetId": 12345678901,
+            "minHour": 0,
+            "maxHour": 0,
+            "excludeHour": {
+                "startHour": 0,
+                "endHour": 0
+            }
+        },
+        {
+            "tweetId": 12345678901
+        }
+    ]
+}

@@ -1,4 +1,4 @@
-﻿namespace Adacola.SoftOmeletRice
+namespace Adacola.SoftOmeletRice
 
 [<AutoOpen>]
 module Model =
@@ -8,6 +8,6 @@ module Model =
     type ConsumerKey = ConsumerKeyProvider.Root
     type AccessTokenProvider = JsonProvider<"accessTokenSample.json">
     type AccessToken = AccessTokenProvider.Root
-    type ConfigProvider = JsonProvider<"configSample.json", SampleIsList = true>
+    type ConfigProvider = JsonProvider<"configSample.json">
     type Config = ConfigProvider.Root
     type TweetID = TweetID of int64
