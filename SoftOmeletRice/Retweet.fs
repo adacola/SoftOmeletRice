@@ -2,11 +2,17 @@ module Adacola.SoftOmeletRice.Retweet
 
 open System
 
+let minHourMin = 1
+let minHourMax = 480
+let maxHourMax = 481
+
 let getRetweet (random : Random) (token : CoreTweet.Tokens) (retweet : ConfigProvider.Retweet) =
     let tweetId = TweetID retweet.TweetId
-    let name = retweet.Name |> defaultArg <| string retweet.TweetId
-    let minHour = retweet.MinHour |> defaultArg <| 72 |> max 1 |> min 480
-    let maxHour = retweet.MaxHour |> defaultArg <| 168 |> max (minHour + 1) |> min 481
+    let name =
+        retweet.Name |> Option.map (fun name -> sprintf "%s (%d)" name retweet.TweetId)
+        |> defaultArg <| string retweet.TweetId
+    let minHour = retweet.MinHour |> defaultArg <| 72 |> max minHourMin |> min minHourMax
+    let maxHour = retweet.MaxHour |> defaultArg <| 168 |> max (minHour + 1) |> min maxHourMax
     let maybeExcludeStartEnd = retweet.ExcludeHour |> Option.map (fun x -> x.StartHour, x.EndHour)
 
     async {
